@@ -200,10 +200,10 @@ In the following code, let’s use the above `max` function to pick up the bigge
 
 {% highlight rust %}
 fn main() {
-    let a = Foo { f: box 0 };
+    let a = Foo { f: box 1 };
     let y: &Foo;
     if false {
-        let b = Foo { f: box 1 };
+        let b = Foo { f: box 0 };
         let x = max(&a, &b);
         // error: `b` does not live long enough
         // y = x;
