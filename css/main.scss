@@ -6,7 +6,8 @@
 
 
 // Our variables
-$base-font-family: Helvetica, Arial, sans-serif;
+$base-font-family: 'Lucida Grande', 'Lucida Sans Unicode', Verdana, 'Trebuchet MS', Helvetica, Arial, sans-serif;
+$heading-font-family: Helvetica, Arial, sans-serif;
 $base-font-size:   16px;
 $small-font-size:  $base-font-size * 0.875;
 $base-line-height: 1.5;
@@ -14,11 +15,14 @@ $base-line-height: 1.5;
 $spacing-unit:     30px;
 
 $text-color:       #111;
+$heading-color:    #c60;
 $background-color: #fdfdfd;
+$header-background-color: #f0f0f0;
+$footer-background-color: #f8f8f8;
 $brand-color:      #2a7ae2;
 
 $grey-color:       #828282;
-$grey-color-light: lighten($grey-color, 40%);
+$grey-color-light: lighten($grey-color, 30%);
 $grey-color-dark:  darken($grey-color, 25%);
 
 $on-palm:          600px;
