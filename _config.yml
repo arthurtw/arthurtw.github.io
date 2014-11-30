@@ -1,0 +1,13 @@
+title: Arthur as a Coder
+# email:
+description: >
+  Arthur’s thoughts on coding, software engineering, and other interesting things.
+baseurl: ""
+url: "http://arthurtw.github.io"
+# twitter_username: 
+github_username: arthurtw
+
+# Build settings
+markdown: kramdown
+highlighter: pygments
+
