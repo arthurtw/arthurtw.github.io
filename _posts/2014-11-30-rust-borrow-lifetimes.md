@@ -54,7 +54,7 @@ A borrower has some privileges, too. In addition to accessing or mutating the bo
 
 ### Code samples
 
-Enough talk. Let’s see some code. (You may run Rust code at [play.rust-lang.org](http://play.rust-lang.org/).) In all examples below, we’ll use `struct Foo` which is *non-copyable* because it contains a boxed (heap-allocated) value. Using non-copyable resources make the operations more restrictive, which is a good thing for learning.
+Enough talk. Let’s see some code. (You may run Rust code at [play.rust-lang.org](http://play.rust-lang.org/).) In all examples below, we’ll use `struct Foo` which is *non-copyable* because it contains a boxed (heap-allocated) value. Using non-copyable resources makes the operations more restrictive, which is a good thing for learning.
 
 #### Owner *cannot* access resource during a mutable borrow
 
@@ -122,7 +122,7 @@ However, I would like to use the term *borrow scope* to describe the scope where
 
 A few things about borrow:
 
-Firstly, just remember `&` = borrow and `&mut` = mutable borrow. Wherever you see an `&`, there is a borrow.
+Firstly, just remember `&` = borrow and `&mut` = mutable borrow. Wherever you see an `&`, there *is* a borrow.
 
 Secondly, when an `&` shows up in any struct (in its field) or function/closure (in its return type or captured references), the struct/function/closure *is* a borrower, and all borrow rules apply.
 
@@ -139,7 +139,7 @@ Firstly, a borrow scope:
 
 Secondly, a borrower can extend the borrow scope through a copy (immutable borrow) or move (mutable borrow) that takes place in assignments or function calls. The receiver (can be a new binding, struct, function or closure) then becomes a *new borrower*.
 
-Thirdly, a borrow scope is the *union* of all borrowers’ scopes, and the borrowed resource must be valid within the whole borrow scope.
+Thirdly, a borrow scope is the *union* of all borrowers’ scopes, and the borrowed resource must be valid through the whole borrow scope.
 
 ### Borrow formula
 
@@ -253,12 +253,12 @@ fn store_foo<'a>(x: &mut Link<'a>, y: &'a Foo) {
 }
 {% endhighlight %}
 
-In the following code, the resource owned by `a` is the borrowed resource; the `Link` struct mutably referenced by `x` is the borrower; the borrow scope is till the end of the `main` block.
+In the following code, the resource owned by `a` is the borrowed resource; the `Link` struct mutably referenced by `x` is the borrower (i.e. `*x` is the borrower); the borrow scope is till the end of the `main` block.
 
 {% highlight rust %}
 fn main() {
     let a = Foo { f: box 0 };
-    let mut x = &mut Link { link: &a };
+    let x = &mut Link { link: &a };
     if false {
         let b = Foo { f: box 1 };
         // store_foo(x, &b);
