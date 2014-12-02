@@ -5,6 +5,8 @@ layout: post
 
 [Rust](http://www.rust-lang.org/) is a new programming language under [active development toward 1.0](http://blog.rust-lang.org/2014/09/15/Rust-1.0.html). I might write another blog about Rust and why I think it’s great, but today I’ll just focus on its borrow and lifetimes system, which has stumped many Rust newcomers including myself. This post assumes you have some basic understanding of Rust. If not yet, you may want to read its [Guide](http://doc.rust-lang.org/guide.html) and [Pointer Guide](http://doc.rust-lang.org/guide-pointers.html) first.
 
+*EDIT (Dec-2): Added 8 scope charts for code samples.*
+
 ## Resource ownership and borrow
 
 Rust achieves memory safety without GC by using a sophiscated borrow system. For any resource (stack memory, heap memory, file handle and so on), there is exactly one owner which takes care of its resource deallocation, if needed. You may create new bindings to refer to the resource using `&` or `&mut`, which is called a borrow or mutable borrow. The compiler ensures all owners and borrowers behave correctly.
@@ -56,6 +58,8 @@ A borrower has some privileges, too. In addition to accessing or mutating the bo
 
 Enough talk. Let’s see some code. (You may run Rust code at [play.rust-lang.org](http://play.rust-lang.org/).) In all examples below, we’ll use `struct Foo` which is *non-copyable* because it contains a boxed (heap-allocated) value. Using non-copyable resources makes the operations more restrictive, which is a good thing for learning.
 
+For every code sample, we also provide a “scope chart” to illustrate the scopes of owner, borrowers etc. The curly braces in the header line match the curly braces in the code.
+
 #### Owner *cannot* access resource during a mutable borrow
 
 This code wouldn’t compile if we uncomment the last `println!` line:
@@ -74,6 +78,11 @@ fn main() {
 }
 {% endhighlight %}
 
+               { a x * }
+       owner a   |_____|
+    borrower x     |___| x = &mut a
+    access a.f       |   error
+
 It violates owner’s restriction \#2(a). If we put `let x = &mut a;` in a nested block, the borrow ends before the `println!` line and this would work:
 
 {% highlight rust %}
@@ -87,6 +96,11 @@ fn main() {
     println!("{}", a.f);
 }
 {% endhighlight %}
+
+               { a { x } * }
+       owner a   |_________|
+    borrower x       |_|     x = &mut a
+    access a.f           |   OK
 
 #### Borrower *can* move the mutable borrow to a new borrower
 
@@ -103,6 +117,12 @@ fn main() {
     // println!("{}", x.f);
 }
 {% endhighlight %}
+
+               { a x y * }
+       owner a   |_______|
+    borrower x     |_|     x = &mut a
+    borrower y       |___| y = x
+    access x.f         |   error
 
 After the move, the original borrower `x` can no longer access the borrowed resource.
 
@@ -166,6 +186,13 @@ fn main() {
 }
 {% endhighlight %}
 
+                 { a { x y } * }
+      resource a   |___________|
+      borrower x       |___|     x = &a
+      borrower y         |_____| y = x
+    borrow scope       |=======|
+      mutate a.f             |   error
+
 Even though the borrow happens inside the `if` block and the borrower `x` goes out of scope after the `if` block, it has extended the borrow scope through an assignment `y = x;`, so there are two borrowers: `x` and `y`. According to the borrow formula, the borrow scope is the union of borrower `x` and borrower `y`’s scopes, which ranges from the first borrow `let x = &a;` through the end of the `main` block. (Note that the binding `y` is not a borrower before the `y = x;` line.)
 
 You might have noticed that the `if` block will never get executed since the condition is always `false`, but the compiler still forbids the resource owner `a` to access its resource. This is because all the borrow checking happens at **compile-time**, nothing to do with the program runtime execution.
@@ -192,6 +219,15 @@ fn max<'a>(x: &'a Foo, y: &'a Foo) -> &'a Foo {
 }
 {% endhighlight %}
 
+    (All resources and borrowers are grouped in borrow scope 'a.)
+                      max( {   } ) 
+        resource *x <-------------->
+        resource *y <-------------->
+    borrow scope 'a <==============>
+         borrower x        |___|
+         borrower y        |___|
+       return value          |___|   pass to the caller
+
 In this function, we have one borrow scope `'a` and three borrowers: the two input parameters, and the function return result. The aforementioned borrow formula still applies, but now *every* borrowed resource must satisfy the formula. See the example below.
 
 ### Code sample
@@ -210,6 +246,15 @@ fn main() {
     }
 }
 {% endhighlight %}
+
+                  { a { b x (  ) y } }
+       resource a   |________________| pass
+       resource b       |__________|   fail
+     borrow scope         |==========|
+    temp borrower            |_|       &a
+    temp borrower            |_|       &b
+       borrower x         |________|   x = max(&a, &b)
+       borrower y                |___| y = x
 
 Until `let x = max(&a, &b);`, things are fine because `&a` and `&b` are temporary references which are valid only in the expression, and the third borrower `x` borrows the two resources (either `a` or `b` but to the borrow checker, it borrows both) till the end of the `if` block, so the borrow scope is from `let x = max(&a, &b);` to the end of the `if` block. Both resources `a` and `b` are valid through the whole borrow scope, hence satisfying the borrow formula.
 
@@ -241,6 +286,13 @@ fn main() {
 }
 {% endhighlight %}
 
+                 { a x { b * } }
+      resource a   |___________| pass
+      resource b         |___|   fail
+    borrow scope     |=========|
+      borrower x     |_________| x.link = &a
+      borrower x           |___| x.link = &b
+
 In the above example, borrower `x` is borrowing resource from owner `a`, and the borrow scope is till the end of the `main` block. So far so good. If we uncomment the last assignment `x.link = &b;`, `x` is also trying to borrow resource from owner `b`, which would make resource `b` to fail the test of the borrow formula.
 
 ### Function to extend borrow scope without a return value
@@ -265,6 +317,13 @@ fn main() {
     }
 }
 {% endhighlight %}
+
+                 { a x { b * } }
+      resource a   |___________| pass
+      resource b         |___|   fail
+    borrow scope     |=========|
+     borrower *x     |_________| x.link = &a
+     borrower *x           |___| x.link = &b
 
 If we uncomment the last function call `store_foo(x, &b);`, the function will try to store `&b` to `x.link`, making resource `b` another borrowed resource and failing the test of the borrow formula, since resource `b`’s scope does not cover the whole borrow scope.
 
