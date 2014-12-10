@@ -1,5 +1,5 @@
 ---
-title: New blog home
+title: New Blog Home
 layout: post
 ---
 

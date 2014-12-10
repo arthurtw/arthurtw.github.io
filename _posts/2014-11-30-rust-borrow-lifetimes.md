@@ -1,5 +1,5 @@
 ---
-title: Rust borrow and lifetimes
+title: Rust Borrow and Lifetimes
 layout: post
 ---
 
