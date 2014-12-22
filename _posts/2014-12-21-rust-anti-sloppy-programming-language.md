@@ -3,7 +3,9 @@ title: Rust, an Anti-Sloppy Programming Language
 layout: post
 ---
 
-*Disclaimer: The taste for programming languages is very subjective, so is this blog post. Please take it with a grain of salt.*
+> Disclaimer: The taste for programming languages is very subjective, so is this blog post. Please take it with a grain of salt.
+>
+> EDIT (Dec-22): Modified some wording - GC in the cons; dynamic language comparison. Mentioned async I/O in web development section.
 
 Several new programming languages emerged recently. Among them, [Rust](http://www.rust-lang.org/) particularly interests me. In this blog, I’m going to share my impressions of Rust, and compare it with some other programming languages.
 
@@ -57,9 +59,9 @@ Rust is an anti-sloppy language. Everything must be crystal clear to the compile
 
 The upside: you tend to write better, clearer code in Rust. When it’s internalised, the friction may get less or even go away. (I’m not there yet.)
 
-#### GC is a second-class citizen
+#### GC is secondary
 
-Rust provides basic GC: [`Rc`](http://doc.rust-lang.org/std/rc/struct.Rc.html), reference counting and [`Arc`](http://doc.rust-lang.org/std/sync/struct.Arc.html), atomically reference counting, without cyclic detection. However, they are not first-class citizens in the language, and you end up with using standard Rust memory management (stack, `&` and `Box`) more often. If memory is a non-issue to your application, you are still paying a price for Rust’s GC-free memory safety.
+Rust provides basic GC: [`Rc`](http://doc.rust-lang.org/std/rc/struct.Rc.html), reference counting and [`Arc`](http://doc.rust-lang.org/std/sync/struct.Arc.html), atomically reference counting, without cyclic detection. However, they are not the default in the language, and you end up with using standard Rust memory management (stack, `&` and `Box`) more often. If memory is a non-issue to your application, you are still paying a price for Rust’s GC-free memory safety.
 
 #### Expressiveness is not a goal
 
@@ -83,7 +85,7 @@ Dynamic languages, or scripting languages, are on the other end of the programmi
 - semi-automated job (e.g. log parsing/analysis, batch text processing)
 - etc.
 
-In those cases, the effort to get everything exactly right might not be worth it. On the contrary, I think Rust works better for:
+In those cases, the effort to get everything exactly right might not be worth it. On the contrary, I think Rust (post 1.0) will work better for:
 
 - a modestly-sized or larger team
 - code for long-running production use
@@ -153,11 +155,13 @@ Being a systems programming language, is Rust suitable for web development? This
 
 First and foremost, some basic HTTP libraries must be ready. ([Are we web yet](http://arewewebyet.com/) provides some information.) The pioneer [rust-http](https://github.com/chris-morgan/rust-http) is obsolete; its supposed successor, [Teepee](http://teepee.rs/), is almost dormant. Fortunately, [Hyper](https://github.com/hyperium/hyper) seems a good candidate. Being [adopted](http://blog.servo.org/2014/12/09/twis-14/) by Servo, the Rust’s symbiotic project, I read it as a blessed Rust HTTP library.
 
-There are some Rust web frameworks under active development, too, such as [Iron](https://github.com/iron/iron/) and [nickel.rs](http://nickel.rs/). It may take a while before things settle down.
+Rust standard library has not supported asynchronous I/O yet. An external library, [mio](https://github.com/carllerche/mio), can be used for nonblocking socket I/O. Green threads support was removed as part of the I/O simplification effort.
+
+There are some Rust web frameworks under active development, such as [Iron](https://github.com/iron/iron/) and [nickel.rs](http://nickel.rs/). It may take a while before things settle down.
 
 #### Is Rust for web?
 
-Sooner or later, libraries and frameworks will be ready. The questions is, is Rust itself a programming language suitable for web development? Are Rust’s low-level feature and memory safety overkill?
+Eventually, libraries and frameworks will be ready. The questions is, is Rust itself a programming language suitable for web development? Are Rust’s low-level feature and memory safety overkill?
 
 I think in the end, it depends on your expectation of the project. Similar to my comparison between Rust and dynamic languages, for short-lived projects, Rust’s strictness might not be worth it. But if you expect the product to survive a while, say, half a year or longer, Rust can be a good choice.
 
