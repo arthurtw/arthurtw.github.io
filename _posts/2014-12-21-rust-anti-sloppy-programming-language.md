@@ -5,7 +5,7 @@ layout: post
 
 > Disclaimer: The taste for programming languages is very subjective, so is this blog post. Please take it with a grain of salt.
 >
-> EDIT (Dec-22): Modified some wording - GC in the cons; dynamic language comparison. Mentioned async I/O in web development section.
+> EDIT (Dec-22,23): Modified some wording in the cons and dynamic language comparison sections. Mentioned async I/O in web development section.
 
 Several new programming languages emerged recently. Among them, [Rust](http://www.rust-lang.org/) particularly interests me. In this blog, I’m going to share my impressions of Rust, and compare it with some other programming languages.
 
@@ -31,7 +31,7 @@ This is arguably Rust’s most significant achievement. For lower-level programm
 
 Indeed, Rust programmers can write unsafe code in an `unsafe` block, but (1) the programmer must do so intentionally, and (2) the `unsafe` blocks could be limited to a very small percentage of the code base and put under close scrutiny.
 
-Garbage collector is the most common way to address memory safety. If you can live with GC, you have many choices. However, Rust’s ownership system does not only provides memory safety, but also data and resource safety. (See below.)
+Garbage collector is the most common way to address memory safety. If you can live with GC, you have many choices. However, Rust’s ownership system does not only provide memory safety, but also data and resource safety. (See below.)
 
 #### RAII on resources
 
@@ -69,9 +69,7 @@ Expressiveness or elegance is not a goal of Rust. It’s certainly not bad in th
 
 #### Higher entry barrier
 
-Rust is not a language you may quickly pick up and code professionally in a few  weeks. (OK, maybe you are smarter, but at least not in a few days.) Rust is perhaps smaller than C++, but definitely larger than many programming languages. Compared with other languages, it’s not among the most accessible.
-
-On the other hand, the entry barrier is a filter. Rust code quality may be of higher quality partly due to this.
+In general, Rust is not a language you may quickly pick up and code professionally in a few weeks. Rust is perhaps smaller than C++, but definitely larger than many programming languages. Compared with other languages, it’s not among the most accessible. This may become a problem if the ease of learning is a priority.
 
 ## Rust versus other languages
 
@@ -96,7 +94,7 @@ In short, when code quality matters. Dynamic languages give you the initial codi
 
 #### Go
 
-It can be debate-baiting to compare these two, but since I’ve spent some time on learning Go, I’d like to share my subjective opinions anyway. Compared with Rust, I like Go for the following:
+It can be debate-baiting to compare these two, but since I’ve spent some time on learning [Go](http://golang.org/), I’d like to share my subjective opinions anyway. Compared with Rust, I like Go for the following:
 
 - lightweight - the language is small (and simple is very powerful)
 - gofmt - it removes much mental burden from developers when coding
@@ -173,4 +171,4 @@ Of course, Rust is still not 1.0, and things are not quite ready yet. If you can
 
 ## You should try Rust!
 
-Whether using Rust or not, you should give it a try (maybe after 1.0 alpha). Expect some early friction, but it shall go away quickly.
+Whether using Rust or not, you should give it a try (maybe after [1.0 alpha](http://blog.rust-lang.org/2014/12/12/1.0-Timeline.html)). Expect some early friction, but it shall go away quickly.
