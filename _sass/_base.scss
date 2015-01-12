@@ -206,3 +206,27 @@ pre {
         }
     }
 }
+
+
+
+/**
+ * Tables
+ */
+table {
+    margin: ($spacing-unit / 2) 0;
+    border-spacing: 0;
+}
+
+th {
+    background: $table-color-header;
+}
+
+tr:nth-child(even) {
+    background: $table-color-row;
+}
+
+td {
+    border-bottom: 1px solid $table-color-header;
+    padding: 1px $spacing-unit / 3;
+}
+
