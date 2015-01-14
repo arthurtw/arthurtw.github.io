@@ -148,7 +148,7 @@ release   | **1.06x** | **0.55x** |
 debug, -i | 4.26x | 2.72x |
 debug     | 4.21x | 2.44x |
 
-The “debug” version is just for your reference.
+The “debug” version is just for your reference. (Nim only ran 1-2% slower with `--boundChecks:on`, so I didn’t include that result in this example.)
 
 ## Example 2: Conway’s Game of Life
 
@@ -310,10 +310,12 @@ To measure the execution time, some code changes are needed:
 
 Here is the result with Nim’s `-d:release` and Rust’s `--release` flags:
 
-|                     | Rust | Nim   | n=30000 |
---------------------- | ---- | ----- | ------- |
-(1) with map print    | **1x** | **1.75x** | 1x=3.33s |
-(2) without map print | **1x** | **1.15x** | 1x=0.78s |
+|                     | Rust | Nim  | Nim/bc:on   | n=30000 |
+--------------------- | ---- | ---- | ----- | ------- |
+(1) with map print    | **1x** | **1.75x** | **1.87x** | 1x=3.33s |
+(2) without map print | **1x** | **1.15x** | **1.72x** | 1x=0.78s |
+
+(Since Rust does bounds checking, to be fair, I added a column “Nim/bc:on” for Nim binaries with an additional `--boundChecks:on` flag.)
 
 ## Nim vs. Rust
 
