@@ -3,6 +3,8 @@ title: A Quick Comparison of Nim vs. Rust
 layout: post
 ---
 
+> EDIT (Jan-13): Use Nim’s `-d:release` instead of `--opt:speed` flag. The change made it running 2~2.5x faster.
+
 [Rust](http://www.rust-lang.org/) and [Nim](http://nim-lang.org/) are the two new programming languages I have been following for a while. Shortly after my previous [blog post](arthurtw.github.io/2014/12/21/rust-anti-sloppy-programming-language.html) about Rust, [Nim 0.10.2](http://nim-lang.org/news.html#Z2014-12-29-version-0-10-2-released) was out. This led me to take a closer look at Nim, and, naturally, compare it with Rust.
 
 In this blog post, I’m going to share my two simple examples written in Nim and Rust, the rough execution time comparison, and my subjective impressions of coding in both.
@@ -127,7 +129,7 @@ If you build the project by yourself, you may want to uncomment line 2 of [main.
 
 ### Execution time comparison
 
-I compiled the code with Nim’s `--opt:speed` and Rust’s `--release` flags. The sample 5MB input file was collected from Nim compiler’s C source files:
+I compiled the code with Nim’s `-d:release` and Rust’s `--release` flags. The sample 5MB input file was collected from Nim compiler’s C source files:
 
     $ cat c_code/3_3/*.c > /tmp/input.txt
     $ wc /tmp/input.txt
@@ -141,8 +143,8 @@ Here is the result on my Mac mini with 2.3 GHz Intel Core i7 and 8 GB RAM: (1x =
 
 |         | Rust  | Nim   |
 --------- | ----- | ----- |
-release, -i | **1x**  | **1.22x** |
-release   | **1.06x** | **1.16x** |
+release, -i | **1x**  | **0.56x** |
+release   | **1.06x** | **0.55x** |
 debug, -i | 4.26x | 2.72x |
 debug     | 4.21x | 2.44x |
 
@@ -306,19 +308,19 @@ To measure the execution time, some code changes are needed:
 1. Change the loop count from 300 to 30000.
 1. As the map redraw is time-consuming, the measurement is taken both (1) with and (2) without map print (i.e. comment out the map print lines in [conway.nim](https://github.com/arthurtw/nim-examples/blob/master/conway/conway.nim#L29) and [main.rs](https://github.com/arthurtw/rust-examples/blob/master/conway/src/main.rs#L31,L32)).
 
-Here is the result with Nim’s `--opt:speed` and Rust’s `--release` flags:
+Here is the result with Nim’s `-d:release` and Rust’s `--release` flags:
 
 |                     | Rust | Nim   | n=30000 |
 --------------------- | ---- | ----- | ------- |
-(1) with map print    | **1x** | **3.90x** | 1x=3.33s |
-(2) without map print | **1x** | **3.07x** | 1x=0.78s |
+(1) with map print    | **1x** | **1.75x** | 1x=3.33s |
+(2) without map print | **1x** | **1.15x** | 1x=0.78s |
 
 ## Nim vs. Rust
 
 Although Nim and Rust are both compiled languages aiming for good performance, they are two very different languages. Their limited similarities I can think up include:
 
 - compiled and statically typed
-- aiming for good performance (Rust usually runs faster but I think the gap is not fundamentally big, and further optimizations on Nim are probable)
+- aiming for good performance (either could run faster depending on the underlying implementations, and further optimizations are probable)
 - composition over inheritance (this seems a trend of new languages?)
 - easy C binding
 - popular language goodies: generics, closure, functional features, type inference, macro, statement as expression…
