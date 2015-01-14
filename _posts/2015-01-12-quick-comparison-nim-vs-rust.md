@@ -104,12 +104,9 @@ fn do_work(cfg: &config::Config) -> IoResult<()> {
                         true  => cap.to_ascii_lowercase(),
                         false => cap.to_string(),
                     };
-                    let found = match map.get_mut(&word) {
-                        Some(count) => { *count = *count + 1; true }
-                        None => false,
-                    };
-                    if !found {
-                        map.insert(word, 1);
+                    match map.entry(word) {
+                        Occupied(mut view) => { *view.get_mut() += 1; }
+                        Vacant(view) => { view.insert(1); }
                     }
                 }
             }
