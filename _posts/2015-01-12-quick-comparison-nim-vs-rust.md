@@ -3,7 +3,7 @@ title: A Quick Comparison of Nim vs. Rust
 layout: post
 ---
 
-> EDIT (Jan-13): Use Nim’s `-d:release` instead of `--opt:speed` flag. The change made it running 2~2.5x faster.
+> EDIT (Jan-13): Use Nim’s `-d:release` instead of `--opt:speed` flag which made Nim running 2~2.5x faster. Use Rust’s `collections::HashMap` instead of `BTreeMap` for fair comparison with Nim.
 
 [Rust](http://www.rust-lang.org/) and [Nim](http://nim-lang.org/) are the two new programming languages I have been following for a while. Shortly after my previous [blog post](arthurtw.github.io/2014/12/21/rust-anti-sloppy-programming-language.html) about Rust, [Nim 0.10.2](http://nim-lang.org/news.html#Z2014-12-29-version-0-10-2-released) was out. This led me to take a closer look at Nim, and, naturally, compare it with Rust.
 
@@ -71,7 +71,7 @@ proc doWork(inFilenames: seq[string] = nil,
 
 ### Rust version
 
-To acquaint myself with Rust, I implemented a simple `BTreeMap` struct akin to `collections::BTreeMap`. (The results of their execution speed are similar.) The [getopts](http://doc.rust-lang.org/getopts/getopts/index.html) crate is used to parse command arguments to my `Config` struct. Other parts should be straightforward.
+To acquaint myself with Rust, I implemented a simple `BTreeMap` struct akin to `collections::BTreeMap`, but I ended up with using Rust’s `collections::HashMap` for fair comparison with Nim. (The code is still left there for your reference.) The [getopts](http://doc.rust-lang.org/getopts/getopts/index.html) crate is used to parse command arguments to my `Config` struct. Other parts should be straightforward.
 
 Here is the code snippet from my [Rust wordcount](https://github.com/arthurtw/rust-examples/tree/master/wordcount) project:
 
@@ -93,8 +93,8 @@ fn do_work(cfg: &config::Config) -> IoResult<()> {
     };
 
     // Parse words
-    let mut map = btree_map::BTreeMap::<String, u32>::new();
-    // let mut map = collections::BTreeMap::<String, u32>::new();
+    let mut map = collections::HashMap::<String, u32>::new();
+    // let mut map = btree_map::BTreeMap::<String, u32>::new();
     let re = Regex::new(r"\w+").unwrap();
     for reader in readers.iter_mut() {
         for line in reader.lines() {
@@ -117,9 +117,13 @@ fn do_work(cfg: &config::Config) -> IoResult<()> {
     }
 
     // Write counts
-    for (k, v) in map.iter() {
-        let line = format!("{}\t{}\n", v, k);
-        try!(writer.write(line.as_bytes()));
+    let mut words: Vec<&String> = map.keys().collect();
+    words.sort();
+    for word in words.iter() {
+        if let Some(count) = map.get(*word) {
+            let line = format!("{}\t{}\n", count, word);
+            try!(writer.write(line.as_bytes()));
+        }
     }
     Ok(())
 }
@@ -139,14 +143,14 @@ The command to run the Nim version is like this: (Rust’s is similar)
 
     $ time ./wordcount -i -o:result.txt input.txt
 
-Here is the result on my Mac mini with 2.3 GHz Intel Core i7 and 8 GB RAM: (1x = 1.15 seconds)
+Here is the result on my Mac mini with 2.3 GHz Intel Core i7 and 8 GB RAM: (1x = 1.06 seconds)
 
 |         | Rust  | Nim   |
 --------- | ----- | ----- |
-release, -i | **1x**  | **0.56x** |
-release   | **1.06x** | **0.55x** |
-debug, -i | 4.26x | 2.72x |
-debug     | 4.21x | 2.44x |
+release, -i | **1x**  | **0.60x** |
+release   | **1.04x** | **0.59x** |
+debug, -i | 2.96x | 2.92x |
+debug     | 3.23x | 2.62x |
 
 The “debug” version is just for your reference. (Nim only ran 1-2% slower with `--boundChecks:on`, so I didn’t include that result in this example.)
 
