@@ -3,7 +3,7 @@ title: A Quick Comparison of Nim vs. Rust
 layout: post
 ---
 
-> EDIT (Jan-13): Use Nim’s `-d:release` instead of `--opt:speed` flag which made Nim running 2~2.5x faster. Use Rust’s `collections::HashMap` instead of `BTreeMap` for fair comparison with Nim.
+> EDIT (Jan-13): Use Nim’s `-d:release` instead of `--opt:speed` flag which made Nim running 2~2.5x faster. Use Rust’s `regex!` macro, and `collections::HashMap` instead of `BTreeMap`.
 
 [Rust](http://www.rust-lang.org/) and [Nim](http://nim-lang.org/) are the two new programming languages I have been following for a while. Shortly after my previous [blog post](arthurtw.github.io/2014/12/21/rust-anti-sloppy-programming-language.html) about Rust, [Nim 0.10.2](http://nim-lang.org/news.html#Z2014-12-29-version-0-10-2-released) was out. This led me to take a closer look at Nim, and, naturally, compare it with Rust.
 
@@ -95,7 +95,8 @@ fn do_work(cfg: &config::Config) -> IoResult<()> {
     // Parse words
     let mut map = collections::HashMap::<String, u32>::new();
     // let mut map = btree_map::BTreeMap::<String, u32>::new();
-    let re = Regex::new(r"\w+").unwrap();
+    let re = regex!(r"\w+");
+    // let re = Regex::new(r"\w+").unwrap();
     for reader in readers.iter_mut() {
         for line in reader.lines() {
             for caps in re.captures_iter(line.unwrap().as_slice()) {
@@ -140,16 +141,20 @@ The command to run the Nim version is like this: (Rust’s is similar)
 
     $ time ./wordcount -i -o:result.txt input.txt
 
-Here is the result on my Mac mini with 2.3 GHz Intel Core i7 and 8 GB RAM: (1x = 1.06 seconds)
+Here is the result on my Mac mini with 2.3 GHz Intel Core i7 and 8 GB RAM: (1x = 1.08 seconds)
 
-|         | Rust  | Nim   |
---------- | ----- | ----- |
-release, -i | **1x**  | **0.60x** |
-release   | **1.04x** | **0.59x** |
-debug, -i | 2.96x | 2.92x |
-debug     | 3.23x | 2.62x |
+|           | Rust regex! | Rust Regex | Nim   |
+----------- | ----------- | ---------- | ----- |
+release, -i | **1x**      | **1.17x**  | **0.68x** |
+release     | **0.92x**   | **1.22x**  | **0.66x** |
+debug, -i   | 11.84x      | 3.24x      | 3.24x |
+debug       | 11.71x      | 3.10x      | 3.03x |
 
-The “debug” version is just for your reference. (Nim only ran 1-2% slower with `--boundChecks:on`, so I didn’t include that result in this example.)
+Some notes:
+
+1. Rust `regex!` runs faster than `Regex`; both are tested. (Uncomment line 21 to use `Regex`.)
+1. The “debug” version is just for your reference.
+1. Nim only ran 1-2% slower with `--boundChecks:on`, so I didn’t include its result in this example.
 
 ## Example 2: Conway’s Game of Life
 
@@ -316,7 +321,7 @@ Here is the result with Nim’s `-d:release` and Rust’s `--release` flags:
 (1) with map print    | **1x** | **1.75x** | **1.87x** | 1x=3.33s |
 (2) without map print | **1x** | **1.15x** | **1.72x** | 1x=0.78s |
 
-(Since Rust does bounds checking, to be fair, I added a column “Nim/bc:on” for Nim binaries with an additional `--boundChecks:on` flag.)
+(Since Rust does bounds checking, to be fair, I added a column “Nim/bc:on” for Nim binaries compiled with an additional `--boundChecks:on` flag.)
 
 ## Nim vs. Rust
 
