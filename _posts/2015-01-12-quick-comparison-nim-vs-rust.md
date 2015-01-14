@@ -148,7 +148,7 @@ release   | **1.06x** | **0.55x** |
 debug, -i | 4.26x | 2.72x |
 debug     | 4.21x | 2.44x |
 
-The “debug” version is just for your reference. It’s mysterious that Rust’s release version with `-i` ran slightly faster, though.
+The “debug” version is just for your reference.
 
 ## Example 2: Conway’s Game of Life
 
