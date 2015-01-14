@@ -225,8 +225,8 @@ tr:nth-child(even) {
     background: $table-color-row;
 }
 
-td {
+th, td {
     border-bottom: 1px solid $table-color-header;
-    padding: 1px $spacing-unit / 3;
+    padding: 1px $spacing-unit / 4;
 }
 
