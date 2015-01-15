@@ -4,6 +4,8 @@ layout: post
 ---
 
 > EDIT (Jan-13): Use Nim’s `-d:release` instead of `--opt:speed` flag. Use Rust’s `regex!` macro, and `collections::HashMap` instead of `BTreeMap`.
+>
+> EDIT (Jan-15): Add Rust results of regular expression `r"[a-zA-Z0-9_]+"`.
 
 [Rust](http://www.rust-lang.org/) and [Nim](http://nim-lang.org/) are the two new programming languages I have been following for a while. Shortly after my previous [blog post](http://arthurtw.github.io/2014/12/21/rust-anti-sloppy-programming-language.html) about Rust, [Nim 0.10.2](http://nim-lang.org/news.html#Z2014-12-29-version-0-10-2-released) was out. This led me to take a closer look at Nim, and, naturally, compare it with Rust.
 
@@ -97,6 +99,8 @@ fn do_work(cfg: &config::Config) -> IoResult<()> {
     // let mut map = btree_map::BTreeMap::<String, u32>::new();
     let re = regex!(r"\w+");
     // let re = Regex::new(r"\w+").unwrap();
+    // let re = regex!(r"[a-zA-Z0-9_]+");
+    // let re = Regex::new(r"[a-zA-Z0-9_]+").unwrap();
     for reader in readers.iter_mut() {
         for line in reader.lines() {
             for caps in re.captures_iter(line.unwrap().as_slice()) {
@@ -141,20 +145,21 @@ The command to run the Nim version is like this: (Rust’s is similar)
 
     $ time ./wordcount -i -o:result.txt input.txt
 
-Here is the result on my Mac mini with 2.3 GHz Intel Core i7 and 8 GB RAM: (1x = 1.08 seconds)
+Here is the result on my Mac mini with 2.3 GHz Intel Core i7 and 8 GB RAM: (1x = 0.88 seconds)
 
-|           | Rust regex! | Rust Regex | Nim   |
------------ | ----------- | ---------- | ----- |
-release, -i | **1x**      | **1.17x**  | **0.68x** |
-release     | **0.92x**   | **1.22x**  | **0.66x** |
-debug, -i   | 11.84x      | 3.24x      | 3.24x |
-debug       | 11.71x      | 3.10x      | 3.03x |
+|           | Rust regex! \w | Regex \w | regex! […] | Regex […] | Nim |
+----------- | ---------- | --------- | ---------- | --------- | --------- |
+release, -i | **1x**     | **1.30x** | **0.44x**  | **1.14x** | **0.75x** |
+release     | **1.07x**  | **1.33x** | **0.50x**  | **1.24x** | **0.73x** |
+debug, -i   | 12.65x     | 20.14x    | 8.77x      | 19.42x    | 3.51x     |
+debug       | 12.41x     | 20.09x    | 8.84x      | 19.33x    | 3.25x     |
 
 Some notes:
 
-1. Rust `regex!` runs faster than `Regex`; both are tested. (Uncomment line 21 to use `Regex`.)
+1. Rust `regex!` runs faster than `Regex`, and `r"[a-zA-Z0-9_]+"` faster than `r"\w+"`. All 4 combinations are tested. (Uncomment line 21-23 above to use others.)
 1. The “debug” version is just for your reference.
 1. Nim only ran 1-2% slower with `--boundChecks:on`, so I didn’t include its result in this example.
+
 
 ## Example 2: Conway’s Game of Life
 
