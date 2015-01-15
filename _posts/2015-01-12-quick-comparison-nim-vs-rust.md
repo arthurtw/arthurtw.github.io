@@ -3,9 +3,9 @@ title: A Quick Comparison of Nim vs. Rust
 layout: post
 ---
 
-> EDIT (Jan-13): Use Nim’s `-d:release` instead of `--opt:speed` flag which made Nim running 2~2.5x faster. Use Rust’s `regex!` macro, and `collections::HashMap` instead of `BTreeMap`.
+> EDIT (Jan-13): Use Nim’s `-d:release` instead of `--opt:speed` flag. Use Rust’s `regex!` macro, and `collections::HashMap` instead of `BTreeMap`.
 
-[Rust](http://www.rust-lang.org/) and [Nim](http://nim-lang.org/) are the two new programming languages I have been following for a while. Shortly after my previous [blog post](arthurtw.github.io/2014/12/21/rust-anti-sloppy-programming-language.html) about Rust, [Nim 0.10.2](http://nim-lang.org/news.html#Z2014-12-29-version-0-10-2-released) was out. This led me to take a closer look at Nim, and, naturally, compare it with Rust.
+[Rust](http://www.rust-lang.org/) and [Nim](http://nim-lang.org/) are the two new programming languages I have been following for a while. Shortly after my previous [blog post](http://arthurtw.github.io/2014/12/21/rust-anti-sloppy-programming-language.html) about Rust, [Nim 0.10.2](http://nim-lang.org/news.html#Z2014-12-29-version-0-10-2-released) was out. This led me to take a closer look at Nim, and, naturally, compare it with Rust.
 
 In this blog post, I’m going to share my two simple examples written in Nim and Rust, the rough execution time comparison, and my subjective impressions of coding in both.
 
@@ -339,9 +339,9 @@ But their differences are more interesting.
 
 Coding in Nim often gives me an illusion of scripting languages. It really blurs the line. Nim tries to remove the coding friction as much as possible, and writing in Nim is a great joy.
 
-However, there is a flip side when leaning toward frictionless freedom too much: the explicitness, clarity or even maintainability could be hampered. Let me give a small example: in Nim, `import` will bring in all module symbols to your namespace. A symbol of a module *can* be qualified with `module.symbol` syntax, or you can use `from module import nil` to force qualification, but really, who will bother doing this? And this seems not “idiomatic Nim” anyway. The result is, you often cannot tell which symbol comes from which module when reading others’ (or *your*) code. (Fortunately, there won’t be naming collision bugs because Nim compiler forces you to qualify in such cases.)
+However, there is a flip side when leaning toward the writer’s freedom too much: the explicitness, clarity or even maintainability could be hampered. Let me give a small example: in Nim, `import` will bring in all module symbols to your namespace. A symbol of a module *can* be qualified with `module.symbol` syntax, or you can use `from module import nil` to force qualification, but really, who will bother doing this? And this seems not “idiomatic Nim” anyway. The result is, you often cannot tell which symbol comes from which module when reading others’ (or *your*) code. (Fortunately, there won’t be naming collision bugs because Nim compiler forces you to qualify in such cases.)
 
-Other examples include: UFCS that lets you use `len(x)`, `x.len()` or `x.len` freely, whichever you like; underline- and case-insensitive, so `mapWidth`, `mapwidth` and `map_width` all map to the same name (I’m glad they enabled the “partial case sensitivity” rule in 0.10.2, therefore `Foo` and `foo` at least differ); use of uninitialised values is OK; etc. In theory, you can follow strict style guidelines to mitigate the issue, but you tend to be more relaxed when coding in Nim.
+Other examples include: UFCS that lets you use `len(x)`, `len x`, `x.len()` or `x.len` freely, whichever you like; underline- and case-insensitive, so `mapWidth`, `mapwidth` and `map_width` all map to the same name (I’m glad they enabled the “partial case sensitivity” rule in 0.10.2, therefore `Foo` and `foo` at least differ); use of uninitialised values is OK; etc. In theory, you can follow strict style guidelines to mitigate the issue, but you tend to be more relaxed when coding in Nim.
 
 On the other hand, Rust honors discipline. Its compiler is very rigid. Everything must be crystal clear. You have to get a lot of things right beforehand. Ambiguity is not an attribute of Rust code... Things like these are usually good for long-lived projects and maintainability, but coding in Rust may feel restrictive and force you to take care of some details you’re not interested of. You are also tempted into memory or performance optimisation even it’s not your priority. You tend to be more disciplined when coding in Rust.
 
