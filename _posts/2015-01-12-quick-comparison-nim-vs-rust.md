@@ -5,7 +5,9 @@ layout: post
 
 > EDIT (Jan-13): Use Nim’s `-d:release` instead of `--opt:speed` flag. Use Rust’s `regex!` macro, and `collections::HashMap` instead of `BTreeMap`.
 >
-> EDIT (Jan-15): Add Rust results of regular expression `r"[a-zA-Z0-9_]+"`.
+> EDIT (Jan-15): Add Rust results with regular expression `r"[a-zA-Z0-9_]+"`.
+>
+> EDIT (Jan-17): Refine Rust code for Zachary Dremann’s pull requests. Edit Rust’s strengths list.
 
 [Rust](http://www.rust-lang.org/) and [Nim](http://nim-lang.org/) are the two new programming languages I have been following for a while. Shortly after my previous [blog post](http://arthurtw.github.io/2014/12/21/rust-anti-sloppy-programming-language.html) about Rust, [Nim 0.10.2](http://nim-lang.org/news.html#Z2014-12-29-version-0-10-2-released) was out. This led me to take a closer look at Nim, and, naturally, compare it with Rust.
 
@@ -90,7 +92,10 @@ fn do_work(cfg: &config::Config) -> IoResult<()> {
         }
     }
     let mut writer = match cfg.output {
-        Some(ref x) => { Box::new(try!(File::create(&Path::new(x.as_slice())))) as Box<Writer> }
+        Some(ref name) => {
+            let file = try!(File::create(&Path::new(name.as_slice())));
+            Box::new(BufferedWriter::new(file)) as Box<Writer>
+        }
         None => { Box::new(io::stdout()) as Box<Writer> }
     };
 
@@ -123,8 +128,7 @@ fn do_work(cfg: &config::Config) -> IoResult<()> {
     words.sort();
     for word in words.iter() {
         if let Some(count) = map.get(*word) {
-            let line = format!("{}\t{}\n", count, word);
-            try!(writer.write(line.as_bytes()));
+            try!(writeln!(writer, "{}\t{}", count, word));
         }
     }
     Ok(())
@@ -132,6 +136,8 @@ fn do_work(cfg: &config::Config) -> IoResult<()> {
 {% endhighlight %}
 
 If you build the project by yourself, you may want to uncomment line 2 of [main.rs](https://github.com/arthurtw/rust-examples/blob/master/wordcount/src/main.rs) to disable the superflous warnings resulting from the “unstable” state of Rust 1.0 alpha libraries.
+
+Zachary Dremann’s [pull request](https://github.com/arthurtw/rust-examples/pull/1/files) suggested using `find_iter`. I keep using `captures_iter` for consistency with the Nim version, but did refine my code a bit.
 
 ### Execution time comparison
 
@@ -255,7 +261,7 @@ impl Conway {
         }
     }
 
-    pub fn init(&mut self, pattern: &Vec<&str>) {
+    pub fn init(&mut self, pattern: &[&str]) {
         let h = pattern.len();
         let h0 = (MAP_HEIGHT - h) / 2;
         for i in 0..(h) {
@@ -304,12 +310,14 @@ impl fmt::String for Conway {
             }
             try!(write!(f, "\n"));
         }
-        write!(f, "")
+        Ok(())
     }
 }
 {% endhighlight %}
 
-Note that in line 49, I intended to determine if the new map has changed, but it turns out a simple comparison `self.map != newmap` won’t work.
+Note that in line 49, I intended to determine if the new map has changed, but it turns out a simple comparison `self.map != newmap` won’t work when array size > 32.
+
+Zachary Dremann’s [pull request](https://github.com/arthurtw/rust-examples/pull/2/files) fixed the comparison issue, and also elegantly avoided the glaring `libc::exit` (which is very non-idiomatic Rust) with `select!` and a non-blocking timer receiver. You may want to take a look.
 
 ### Execution time comparison
 
@@ -402,13 +410,14 @@ Nim’s strengths:
 
 Rust’s strengths:
 
-- Safety and correctness
-- Runtime reliability
+- A true systems programming language: embeddable, GC-free and bare metal
+- Safety, correctness, runtime reliability
 - Strong core team and vibrant community
 - Language features:
   - pattern matching (excellent!)
   - enum variants (though Nim’s object variants are good, too)
   - `let mut` instead of `var` (small thing but matters)
+  - powerful destructuring syntax
 
 Error handling: Nim opts for the common exception mechanism while Rust uses a flexible `Result` type (and `panic!`). I have no strong preference here, but consider it an important difference worth mentioning.
 
