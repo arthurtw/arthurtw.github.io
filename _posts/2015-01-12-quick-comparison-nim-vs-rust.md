@@ -315,9 +315,9 @@ impl fmt::String for Conway {
 }
 {% endhighlight %}
 
-Note that in line 49, I intended to determine if the new map has changed, but it turns out a simple comparison `self.map != newmap` won’t work when array size > 32.
+In line 49, I intended to determine if the new map has changed, but it turns out a simple comparison `self.map != newmap` won’t work for array size > 32 unless you implement `PartialEq` trait.
 
-Zachary Dremann’s [pull request](https://github.com/arthurtw/rust-examples/pull/2/files) fixed the comparison issue, and also elegantly avoided the glaring `libc::exit` (which is very non-idiomatic Rust) with `select!` and a non-blocking timer receiver. You may want to take a look.
+Note that using unsafe `libc::exit` in my [main.rs](https://github.com/arthurtw/rust-examples/blob/master/conway/src/main.rs#L20) is very non-idiomatic in Rust. Zachary Dremann’s [pull request](https://github.com/arthurtw/rust-examples/pull/2/files) elegantly avoided the glaring `libc::exit` with `select!` and a non-blocking timer receiver. You may want to take a look.
 
 ### Execution time comparison
 
