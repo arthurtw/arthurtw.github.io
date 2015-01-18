@@ -153,16 +153,16 @@ The command to run the Nim version is like this: (Rust’s is similar)
 
 Here is the result on my Mac mini with 2.3 GHz Intel Core i7 and 8 GB RAM: (1x = 0.88 seconds)
 
-|           | Rust regex! \w | Regex \w | regex! […] | Regex […] | Nim |
------------ | ---------- | --------- | ---------- | --------- | --------- |
-release, -i | **1x**     | **1.30x** | **0.44x**  | **1.14x** | **0.75x** |
-release     | **1.07x**  | **1.33x** | **0.50x**  | **1.24x** | **0.73x** |
-debug, -i   | 12.65x     | 20.14x    | 8.77x      | 19.42x    | 3.51x     |
-debug       | 12.41x     | 20.09x    | 8.84x      | 19.33x    | 3.25x     |
+|           | Rust | regex! \w  | Regex \w  | regex! […] | Regex […] | Nim       |
+----------- | ---- | ---------- | --------- | ---------- | --------- | --------- |
+release, -i |      | **1x**     | **1.30x** | **0.44x**  | **1.14x** | **0.75x** |
+release     |      | **1.07x**  | **1.33x** | **0.50x**  | **1.24x** | **0.73x** |
+debug, -i   |      | 12.65x     | 20.14x    | 8.77x      | 19.42x    | 3.51x     |
+debug       |      | 12.41x     | 20.09x    | 8.84x      | 19.33x    | 3.25x     |
 
 Some notes:
 
-1. Rust `regex!` runs faster than `Regex`, and `r"[a-zA-Z0-9_]+"` faster than `r"\w+"`. All 4 combinations are tested. (Uncomment line 21-23 above to use others.)
+1. Rust `regex!` runs faster than `Regex`, and `r"[a-zA-Z0-9_]+"` faster than `r"\w+"`. All 4 combinations were tested. (Uncomment line 21-23 above to try them.)
 1. The “debug” version is just for your reference.
 1. Nim only ran 1-2% slower with `--boundChecks:on`, so I didn’t include its result in this example.
 
@@ -315,7 +315,7 @@ impl fmt::String for Conway {
 }
 {% endhighlight %}
 
-In line 49, I intended to determine if the new map has changed, but it turns out a simple comparison `self.map != newmap` won’t work for array size > 32 unless you implement `PartialEq` trait.
+In line 49, I intended to determine if the new map has changed, but it turns out a simple comparison `self.map != newmap` won’t work for array size > 32, unless you implement `PartialEq` trait.
 
 Note that using unsafe `libc::exit` in my [main.rs](https://github.com/arthurtw/rust-examples/blob/master/conway/src/main.rs#L20) is very non-idiomatic in Rust. Zachary Dremann’s [pull request](https://github.com/arthurtw/rust-examples/pull/2/files) elegantly avoided the glaring `libc::exit` with `select!` and a non-blocking timer receiver. You may want to take a look.
 
