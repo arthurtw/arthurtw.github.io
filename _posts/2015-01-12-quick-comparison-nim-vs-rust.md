@@ -8,6 +8,8 @@ layout: post
 > EDIT (Jan-15): Add Rust results with regular expression `r"[a-zA-Z0-9_]+"`.
 >
 > EDIT (Jan-17): Refine Rust code for Zachary Dremann’s pull requests. Edit Rust’s strengths list.
+>
+> EDIT (Mar-12): Merge Zachary Dremann’s [pull request](https://github.com/arthurtw/rust-examples/pull/3) for the newest version of Rust.
 
 [Rust](http://www.rust-lang.org/) and [Nim](http://nim-lang.org/) are the two new programming languages I have been following for a while. Shortly after my previous [blog post](http://arthurtw.github.io/2014/12/21/rust-anti-sloppy-programming-language.html) about Rust, [Nim 0.10.2](http://nim-lang.org/news.html#Z2014-12-29-version-0-10-2-released) was out. This led me to take a closer look at Nim, and, naturally, compare it with Rust.
 
@@ -80,35 +82,32 @@ To acquaint myself with Rust, I implemented a simple `BTreeMap` struct akin to `
 Here is the code snippet from my [Rust wordcount](https://github.com/arthurtw/rust-examples/tree/master/wordcount) project:
 
 {% highlight rust linenos %}
-fn do_work(cfg: &config::Config) -> IoResult<()> {
+fn do_work(cfg: &config::Config) -> io::Result<()> {
     // Open input and output files
-    let mut readers = vec![];
+    let mut readers = Vec::with_capacity(std::cmp::max(1, cfg.input.len()));
     if cfg.input.is_empty() {
-        readers.push(BufferedReader::new(Box::new(io::stdin()) as Box<Reader>));
+        readers.push(BufReader::new(Box::new(io::stdin()) as Box<Read>));
     } else {
-        for name in cfg.input.iter() {
-            let file = try!(File::open(&Path::new(name.as_slice())));
-            readers.push(BufferedReader::new(Box::new(file) as Box<Reader>));
+        for name in &cfg.input {
+            let file = try!(File::open(name));
+            readers.push(BufReader::new(Box::new(file) as Box<Read>));
         }
     }
     let mut writer = match cfg.output {
         Some(ref name) => {
-            let file = try!(File::create(&Path::new(name.as_slice())));
-            Box::new(BufferedWriter::new(file)) as Box<Writer>
+            let file = try!(File::create(name));
+            Box::new(BufWriter::new(file)) as Box<Write>
         }
-        None => { Box::new(io::stdout()) as Box<Writer> }
+        None => { Box::new(io::stdout()) as Box<Write> }
     };
 
     // Parse words
     let mut map = collections::HashMap::<String, u32>::new();
-    // let mut map = btree_map::BTreeMap::<String, u32>::new();
     let re = regex!(r"\w+");
-    // let re = Regex::new(r"\w+").unwrap();
     // let re = regex!(r"[a-zA-Z0-9_]+");
-    // let re = Regex::new(r"[a-zA-Z0-9_]+").unwrap();
-    for reader in readers.iter_mut() {
+    for reader in &mut readers {
         for line in reader.lines() {
-            for caps in re.captures_iter(line.unwrap().as_slice()) {
+            for caps in re.captures_iter(&line.unwrap()) {
                 if let Some(cap) = caps.at(0) {
                     let word = match cfg.ignore_case {
                         true  => cap.to_ascii_lowercase(),
@@ -122,20 +121,17 @@ fn do_work(cfg: &config::Config) -> IoResult<()> {
             }
         }
     }
-
     // Write counts
     let mut words: Vec<&String> = map.keys().collect();
     words.sort();
-    for word in words.iter() {
-        if let Some(count) = map.get(*word) {
+    for &word in &words {
+        if let Some(count) = map.get(word) {
             try!(writeln!(writer, "{}\t{}", count, word));
         }
     }
     Ok(())
 }
 {% endhighlight %}
-
-If you build the project by yourself, you may want to uncomment line 2 of [main.rs](https://github.com/arthurtw/rust-examples/blob/master/wordcount/src/main.rs) to disable the superflous warnings resulting from the “unstable” state of Rust 1.0 alpha libraries.
 
 Zachary Dremann’s [pull request](https://github.com/arthurtw/rust-examples/pull/1/files) suggested using `find_iter`. I keep using `captures_iter` for consistency with the Nim version, but did refine my code a bit.
 
@@ -162,7 +158,7 @@ debug       |      | 12.41x     | 20.09x    | 8.84x      | 19.33x    | 3.25x    
 
 Some notes:
 
-1. Rust `regex!` runs faster than `Regex`, and `r"[a-zA-Z0-9_]+"` faster than `r"\w+"`. All 4 combinations were tested. (Uncomment line 21-23 above to try them.)
+1. Rust `regex!` runs faster than `Regex`, and `r"[a-zA-Z0-9_]+"` faster than `r"\w+"`. All 4 combinations were tested.
 1. The “debug” version is just for your reference.
 1. Nim only ran 1-2% slower with `--boundChecks:on`, so I didn’t include its result in this example.
 
@@ -268,8 +264,8 @@ impl Conway {
             let row = pattern[i];
             let w = row.len();
             let w0 = (MAP_WIDTH - w) / 2;
-            for j in 0..(w) {
-                self.map[i + h0][j + w0] = row.char_at(j) == '1';
+            for (j, c) in row.chars().enumerate() {
+                self.map[i + h0][j + w0] = c == '1';
             }
         }
     }
@@ -280,8 +276,8 @@ impl Conway {
         for i in 0..(MAP_HEIGHT) {
             for j in 0..(MAP_WIDTH) {
                 let mut nlive = 0;
-                for i2 in cmp::max(i-1, 0)..cmp::min(i+2, MAP_HEIGHT) {
-                    for j2 in cmp::max(j-1, 0)..cmp::min(j+2, MAP_WIDTH) {
+                for i2 in i.saturating_sub(1)..cmp::min(i+2, MAP_HEIGHT) {
+                    for j2 in j.saturating_sub(1)..cmp::min(j+2, MAP_WIDTH) {
                         if self.map[i2][j2] && (i2 != i || j2 != j) {
                             nlive += 1;
                         }
@@ -302,7 +298,7 @@ impl Conway {
     }
 }
 
-impl fmt::String for Conway {
+impl fmt::Display for Conway {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         for row in self.map.iter() {
             for cell in row.iter() {
@@ -317,15 +313,15 @@ impl fmt::String for Conway {
 
 In line 49, I intended to determine if the new map has changed, but it turns out a simple comparison `self.map != newmap` won’t work for array size > 32, unless you implement `PartialEq` trait.
 
-Note that using unsafe `libc::exit` in my [main.rs](https://github.com/arthurtw/rust-examples/blob/master/conway/src/main.rs#L20) is very non-idiomatic in Rust. Zachary Dremann’s [pull request](https://github.com/arthurtw/rust-examples/pull/2/files) elegantly avoided the glaring `libc::exit` with `select!` and a non-blocking timer receiver. You may want to take a look.
+Note that using unsafe `libc::exit` in my [main.rs](https://github.com/arthurtw/rust-examples/blob/master/conway/src/main.rs#L23) is very non-idiomatic in Rust. Zachary Dremann’s [pull request](https://github.com/arthurtw/rust-examples/pull/2/files) elegantly avoided the glaring `libc::exit` with `select!` and a non-blocking timer receiver. You may want to take a look.
 
 ### Execution time comparison
 
 To measure the execution time, some code changes are needed:
 
-1. Comment out the sleep function in [conway.nim](https://github.com/arthurtw/nim-examples/blob/master/conway/conway.nim#L31) and [main.rs](https://github.com/arthurtw/rust-examples/blob/master/conway/src/main.rs#L34).
+1. Comment out the sleep function in [conway.nim](https://github.com/arthurtw/nim-examples/blob/master/conway/conway.nim#L31) and [main.rs](https://github.com/arthurtw/rust-examples/blob/master/conway/src/main.rs#L37).
 1. Change the loop count from 300 to 30000.
-1. As the map redraw is time-consuming, the measurement is taken both (1) with and (2) without map print (i.e. comment out the map print lines in [conway.nim](https://github.com/arthurtw/nim-examples/blob/master/conway/conway.nim#L29) and [main.rs](https://github.com/arthurtw/rust-examples/blob/master/conway/src/main.rs#L31,L32)).
+1. As the map redraw is time-consuming, the measurement is taken both (1) with and (2) without map print (i.e. comment out the map print lines in [conway.nim](https://github.com/arthurtw/nim-examples/blob/master/conway/conway.nim#L29) and [main.rs](https://github.com/arthurtw/rust-examples/blob/master/conway/src/main.rs#L34,L35)).
 
 Here is the result with Nim’s `-d:release` and Rust’s `--release` flags:
 
